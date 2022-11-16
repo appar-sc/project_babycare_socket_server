@@ -12,7 +12,9 @@ const server = http.createServer(app);
 app.post('/send', urlencodedParser, function(req,res){
   console.log(req.body);
   if(clientObj[req.body.client]) {
-    clientObj[req.body.client].send(req.body.content);
+    for(let ws of clientObj[req.body.client]){
+	ws.send(req.body.content);
+    }
     res.json({
       status:true
     })
@@ -40,7 +42,11 @@ sio.on('connection',( ws )=> {
     if(ws['handshake'].query) {
       let id = ws['handshake'].query.id
       console.log(id,'Client connected');
-      clientObj[id] = ws;
+      if(clientObj[id]){
+	      clientObj[id].push(ws);
+      } else {
+	      clientObj[id] = [ws]
+      }
       // console.log(clientObj)
     }
     
